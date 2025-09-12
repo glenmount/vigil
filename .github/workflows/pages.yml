@@ -15,7 +15,6 @@ jobs:
         run: |
           mkdir -p docs
           cp -r web/* docs/
-          [ -f receipts/events.jsonl ] && cp receipts/events.jsonl docs/receipts.jsonl || true
           [ -f policies/index.json ]  && cp policies/index.json  docs/policies_index.json || true
       - uses: actions/upload-pages-artifact@v3
         with: { path: docs }
