@@ -9,3 +9,6 @@ all: index label nudge report digest
 
 bundles:
 	@PYTHONPATH=. python qa/run_all.py
+
+bump:
+	@python scripts/bump_now_next.py --touch
