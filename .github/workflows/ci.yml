@@ -3,6 +3,12 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        bundle: [qa/goldens/fixtures, qa/goldens/fixtures_b, qa/goldens/fixtures_c]
+    env:
+      VIGIL_BUNDLE: ${{ matrix.bundle }}
     steps:
       - uses: actions/checkout@v4
       - name: Block outbound network
