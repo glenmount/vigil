@@ -1,0 +1,4 @@
+resident_id,started_at,response_secs
+R1,2025-09-02T08:00,60
+R2,2025-09-02T08:30,75
+R3,2025-09-02T09:00,90
