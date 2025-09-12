@@ -8,7 +8,10 @@ nudge: ; $(PY) python -m cli.nudge
 report: ; $(PY) python -m cli.report
 digest: ; $(PY) python -m cli.digest
 
-all: index label nudge report digest
+scoreboard:
+	@PYTHONPATH=. python -m cli.scoreboard
+
+all: index label nudge report digest scoreboard
 
 bundles:
 	@$(PY) python qa/run_all.py
