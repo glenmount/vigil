@@ -1,14 +1,17 @@
-.PHONY: label nudge report digest all
-label: ; PYTHONPATH=. python -m cli.label
-nudge: ; PYTHONPATH=. python -m cli.nudge
-report: ; PYTHONPATH=. python -m cli.report
-index: ; PYTHONPATH=. python -m engine.policy_index
-index: ; PYTHONPATH=. python -m engine.policy_index
-digest: ; PYTHONPATH=. python -m cli.digest
+.PHONY: index label nudge report digest all clean bundles
+
+PY := PYTHONPATH=.
+
+index: ; $(PY) python -m engine.policy_index
+label: ; $(PY) python -m cli.label
+nudge: ; $(PY) python -m cli.nudge
+report: ; $(PY) python -m cli.report
+digest: ; $(PY) python -m cli.digest
+
 all: index label nudge report digest
 
 bundles:
-	@PYTHONPATH=. python qa/run_all.py
+	@$(PY) python qa/run_all.py
 
-bump:
-	@python scripts/bump_now_next.py --touch
+clean:
+	@rm -f receipts/events.jsonl web/queue.json web/report.json ledger/digest-*.json policies/index.json

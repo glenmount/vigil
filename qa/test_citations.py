@@ -1,16 +1,31 @@
-import json, pathlib, subprocess, os
+import json, os, pathlib, subprocess
+
+FILES_TO_RESET = [
+    "receipts/events.jsonl",
+    "web/queue.json",
+    "web/report.json",
+]
 
 def test_nudges_have_citations_when_present():
-    # rebuild (ensures policy index exists)
+    # Reset any stale artifacts from pre-index runs
+    for fp in FILES_TO_RESET:
+        pathlib.Path(fp).unlink(missing_ok=True)
+
+    # Rebuild (ensures policy index exists and receipts are fresh)
     env = os.environ.copy()
-    subprocess.check_call(["make","all"], env=env)
-    events = []
+    subprocess.check_call(["make", "all"], env=env)
+
     p = pathlib.Path("receipts/events.jsonl")
+    events = []
     if p.exists():
         for line in p.read_text(encoding="utf-8").splitlines():
-            events.append(json.loads(line))
+            line = line.strip()
+            if line:
+                events.append(json.loads(line))
+
     nudges = [e for e in events if e.get("kind") == "nudge"]
     for n in nudges:
         cits = n.get("citations", [])
-        assert all(("doc_id" in c and "sha256" in c and "page" in c) for c in cits), f"bad citation structure: {cits}"
-        assert 0 <= len(cits) <= 2, f"too many citations: {len(cits)}"
+        assert len(cits) <= 2, f"too many citations: {len(cits)}"
+        for c in cits:
+            assert isinstance(c, dict) and all(k in c for k in ("doc_id","sha256","page")), f"bad citation: {c}"
