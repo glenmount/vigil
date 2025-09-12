@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8">
+<title>Vigil — Queue & Report</title>
+<h1>Vigil</h1>
+<p>Live Queue and Weekly Stress Report (read-only).</p>
+<pre id="queue"></pre>
+<pre id="report"></pre>
+<script>
+Promise.all([fetch('queue.json'), fetch('report.json')])
+.then(([q,r])=>Promise.all([q.json(), r.json()]))
+.then(([q,r])=>{
+  queue.textContent = JSON.stringify(q, null, 2);
+  report.textContent = JSON.stringify(r, null, 2);
+});
+</script>

@@ -1,0 +1,9 @@
+name: "Break Guarantees"
+when: "hours_14d >= med OR interruptions_per_hr >= med"
+actions:
+  - title: "Protected 15-min break"
+    owner: "unit_manager"
+    due_by: "PT60M"
+  - title: "Buddy covers 15-min"
+    owner: "buddy"
+    due_by: "PT60M"

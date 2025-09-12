@@ -1,0 +1,10 @@
+{
+  "index_version": "v1",
+  "thresholds": {
+    "hours_14d": {"high": 100, "med": 80},
+    "overtime_7d": {"high": 8, "med": 4},
+    "doubles_10d": {"high": 2, "med": 1},
+    "bells_p95": {"high": 480, "med": 240},
+    "interruptions_per_hr": {"high": 12, "med": 8}
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"events",
+  "type":"object",
+  "required":["observed_at","kind","inputs","sha256"],
+  "properties":{
+    "observed_at":{"type":"string","format":"date-time"},
+    "kind":{"enum":["label","nudge","audit"]},
+    "subject":{"type":"object"},
+    "inputs":{"type":"object"},
+    "thresholds":{"type":"object"},
+    "action":{"type":["object","null"]},
+    "citations":{"type":"array","items":{"type":"object","required":["doc_id","page"]}},
+    "sha256":{"type":"string"}
+  }
+}

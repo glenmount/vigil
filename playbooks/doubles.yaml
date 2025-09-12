@@ -1,0 +1,9 @@
+name: "Double-Shift Recovery"
+when: "doubles_10d >= med"
+actions:
+  - title: "48h rest window"
+    owner: "rostering"
+    due_by: "P2D"
+  - title: "Manager check-in"
+    owner: "manager"
+    due_by: "P1D"

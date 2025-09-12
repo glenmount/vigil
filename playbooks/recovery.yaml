@@ -1,0 +1,9 @@
+name: "Hydration & Offload"
+when: "bells_p95 >= med"
+actions:
+  - title: "Hydration rounds assist"
+    owner: "float_carer"
+    due_by: "PT30M"
+  - title: "Paperwork offload 20m"
+    owner: "assistant"
+    due_by: "PT2H"
