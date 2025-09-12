@@ -9,5 +9,5 @@ jobs:
         run: sudo iptables -A OUTPUT -p tcp -j REJECT || true
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
-      - run: pip install pytest
+      - run: pip install pytest jsonschema
       - run: pytest -q
