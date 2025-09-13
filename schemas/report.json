@@ -1,0 +1,13 @@
+{ "$schema":"https://json-schema.org/draft/2020-12/schema","title":"report","type":"object",
+  "required":["week_of","dm_percent","fixes"],
+  "properties":{
+    "week_of":{"type":"string","format":"date"},
+    "dm_percent":{"type":"number"},
+    "calls_over_8m":{"type":"integer"},
+    "interruptions_per_hr":{"type":"number"},
+    "charting_minutes":{"type":"number"},
+    "fixes":{"type":"array","items":{"type":"object",
+      "required":["title","cost_estimate","owner"],
+      "properties":{"title":{"type":"string"},"cost_estimate":{"type":"number"},"owner":{"type":"string"}}}}
+  }
+}

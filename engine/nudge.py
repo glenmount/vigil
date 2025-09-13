@@ -1,7 +1,8 @@
 from __future__ import annotations
-import json, pathlib, datetime
+import json, pathlib
 from engine.receipts import write_event
 from engine.citations import cite
+from engine.clock import now_iso, today_iso_date
 
 POLICY = json.loads(pathlib.Path("engine/policy.json").read_text(encoding="utf-8")) if pathlib.Path("engine/policy.json").exists() else {
     "index_version":"v1",
@@ -22,7 +23,7 @@ def risk_level(val: float, th: dict) -> str:
 
 def apply_playbook(name: str, reason: str, owner_default: str, due_iso: str, receipts:list):
     return {
-      "id": f"{name.lower().replace(' ','-')}-{datetime.date.today().isoformat()}",
+      "id": f"{name.lower().replace(' ','-')}-{today_iso_date()}",
       "title": reason,
       "owner": owner_default,
       "due_by": due_iso,
@@ -31,30 +32,31 @@ def apply_playbook(name: str, reason: str, owner_default: str, due_iso: str, rec
 
 def nudge_from_labels(labels: dict) -> list:
     items = []
-    # Doubles
-    total_doubles = sum(labels["doubles_10d"].values()) if isinstance(labels["doubles_10d"], dict) else float(labels["doubles_10d"])
+
+    # Doubles → Recovery
+    total_doubles = sum(labels.get("doubles_10d", {}).values()) if isinstance(labels.get("doubles_10d"), dict) else float(labels.get("doubles_10d",0))
     dbl_lvl = risk_level(total_doubles, TH["doubles_10d"])
     if dbl_lvl in ("HIGH","MED"):
-        receipts = []
-        e = write_event("nudge", {"unit":"ALL"}, {"doubles_10d":labels["doubles_10d"]}, TH["doubles_10d"], None, cite("doubles"))
-        receipts.append(e["sha256"])
-        items.append(apply_playbook("Double-Shift Recovery", f"{dbl_lvl}: protect 48h rest window", "rostering",
-                                    datetime.datetime.now(datetime.timezone.utc).isoformat(), receipts))
-    # Breaks (hours)
-    total_hours = sum(labels["hours_14d"].values()) if isinstance(labels["hours_14d"], dict) else float(labels["hours_14d"])
+        r=[]
+        e=write_event("nudge", {"unit":"ALL"}, {"doubles_10d":labels.get("doubles_10d",{})}, TH["doubles_10d"], None, cite("doubles")); r.append(e["sha256"])
+        items.append(apply_playbook("Double-Shift Recovery", f"{dbl_lvl}: protect 48h rest window","rostering", now_iso(), r))
+
+    # Break Guarantees — trigger on hours OR interruptions
+    total_hours = sum(labels.get("hours_14d", {}).values()) if isinstance(labels.get("hours_14d"), dict) else float(labels.get("hours_14d",0))
     brk_lvl = risk_level(total_hours, TH["hours_14d"])
-    if brk_lvl in ("HIGH","MED"):
-        receipts = []
-        e = write_event("nudge", {"unit":"ALL"}, {"hours_14d":labels["hours_14d"]}, TH["hours_14d"], None, cite("breaks"))
-        receipts.append(e["sha256"])
-        items.append(apply_playbook("Break Guarantees", f"{brk_lvl}: schedule protected breaks", "unit_manager",
-                                    datetime.datetime.now(datetime.timezone.utc).isoformat(), receipts))
-    # Bells
-    bell95 = float(labels["bells_p95"]) if not isinstance(labels["bells_p95"], dict) else 0.0
+    intr = float(labels.get("interruptions_per_hr", 0.0))
+    intr_high_enough = intr >= TH["interruptions_per_hr"]["med"]
+    if brk_lvl in ("HIGH","MED") or intr_high_enough:
+        r=[]
+        payload = {"hours_14d":labels.get("hours_14d",{}), "interruptions_per_hr": intr}
+        e=write_event("nudge", {"unit":"ALL"}, payload, {"hours_14d":TH["hours_14d"], "interruptions_per_hr":TH["interruptions_per_hr"]}, None, cite("breaks")); r.append(e["sha256"])
+        items.append(apply_playbook("Break Guarantees", "Schedule protected 15-min breaks", "unit_manager", now_iso(), r))
+
+    # Bells → Hydration & Offload
+    bell95 = float(labels.get("bells_p95",0.0)) if not isinstance(labels.get("bells_p95"), dict) else 0.0
     if bell95 >= TH["bells_p95"]["med"]:
-        receipts = []
-        e = write_event("nudge", {"unit":"ALL"}, {"bells_p95":bell95}, TH["bells_p95"], None, cite("bells"))
-        receipts.append(e["sha256"])
-        items.append(apply_playbook("Hydration & Offload", "MED: long bells → offload docs + hydration rounds", "assistant",
-                                    datetime.datetime.now(datetime.timezone.utc).isoformat(), receipts))
+        r=[]
+        e=write_event("nudge", {"unit":"ALL"}, {"bells_p95":bell95}, TH["bells_p95"], None, cite("bells")); r.append(e["sha256"])
+        items.append(apply_playbook("Hydration & Offload", "MED: long bells → offload docs + hydration rounds", "assistant", now_iso(), r))
+
     return items

@@ -1,0 +1,12 @@
+{ "$schema":"https://json-schema.org/draft/2020-12/schema","title":"queue","type":"object",
+  "required":["generated_at","items"],
+  "properties":{
+    "generated_at":{"type":"string","format":"date-time"},
+    "items":{"type":"array","items":{"type":"object",
+      "required":["id","title","owner","due_by","receipts"],
+      "properties":{
+        "id":{"type":"string"},"title":{"type":"string"},"owner":{"type":"string"},
+        "due_by":{"type":"string","format":"date-time"},
+        "receipts":{"type":"array","items":{"type":"string"}}
+      }}}}
+}
