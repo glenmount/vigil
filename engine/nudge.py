@@ -59,11 +59,19 @@ def nudge_from_labels(labels: dict) -> list:
         e=write_event("nudge", {"unit":"ALL"}, {"bells_p95":bell95}, TH["bells_p95"], None, cite("bells")); r.append(e["sha256"])
         items.append(apply_playbook("Hydration & Offload", "MED: long bells → offload docs + hydration rounds", "assistant", now_iso(), r))
 
-    # Sterile Cockpit (Handover) — if any window breached
+    # Sterile Cockpit (Handover) — per-unit items when breached, else ALL fallback
     breaches_total = int(labels.get("handover_breaches_total", 0))
+    breach_units = labels.get("handover_breach_units", {})
     if breaches_total >= 1:
-        r=[]
-        e=write_event("nudge", {"unit":"ALL"}, {"handover_breaches_total":breaches_total}, {}, None, cite("handover")); r.append(e["sha256"])
-        items.append(apply_playbook("Sterile Cockpit (Handover)", "Sterile Cockpit: protect 20-min handover window (no interruptions)", "unit_manager", now_iso(), r))
-
+        if breach_units:
+            for u, c in sorted(breach_units.items()):
+                r=[]
+                e=write_event("nudge", {"unit":u}, {"handover_breaches_total":c}, {}, None, cite("handover")); r.append(e["sha256"])
+                items.append(apply_playbook("Sterile Cockpit: protect 20-min handover window (no interruptions) — Unit {}".format(u),
+                                            "Sterile Cockpit — Unit {}".format(u), "unit_manager", now_iso(), r))
+        else:
+            r=[]
+            e=write_event("nudge", {"unit":"ALL"}, {"handover_breaches_total":breaches_total}, {}, None, cite("handover")); r.append(e["sha256"])
+            items.append(apply_playbook("Sterile Cockpit: protect 20-min handover window (no interruptions)",
+                                        "Sterile Cockpit", "unit_manager", now_iso(), r))
     return items
