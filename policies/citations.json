@@ -1,0 +1,5 @@
+{
+  "breaks":  [ { "match": "breaks.pdf",     "page": 3 } ],
+  "doubles": [ { "match": "rostering.pdf",  "page": 5 } ],
+  "bells":   [ { "match": "call-bells.pdf", "page": 2 } ]
+}

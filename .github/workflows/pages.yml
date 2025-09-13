@@ -2,7 +2,7 @@ name: pages
 on:
   push:
     branches: [main]
-    paths: ["web/**","docs/**",".github/workflows/pages.yml"]
+    paths: ["web/**","docs/**","receipts/**","policies/**",".github/workflows/pages.yml"]
   workflow_dispatch:
 permissions: { contents: read, pages: write, id-token: write }
 concurrency: { group: "pages", cancel-in-progress: true }
@@ -11,10 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Stage /web as site
+      - name: Build site artifacts
         run: |
           mkdir -p docs
           cp -r web/* docs/
+          [ -f receipts/events.jsonl ] && cp receipts/events.jsonl docs/receipts.jsonl || true
+          [ -f policies/index.json ]  && cp policies/index.json  docs/policies_index.json || true
       - uses: actions/upload-pages-artifact@v3
         with: { path: docs }
   deploy:
