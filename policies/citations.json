@@ -1,5 +1,1 @@
-{
-  "breaks":  [ { "match": "breaks.pdf",     "page": 3 } ],
-  "doubles": [ { "match": "rostering.pdf",  "page": 5 } ],
-  "bells":   [ { "match": "call-bells.pdf", "page": 2 } ]
-}
+{"bells":[{"match":"call-bells.pdf","page":2}],"breaks":[{"match":"breaks.pdf","page":3}],"doubles":[{"match":"rostering.pdf","page":5}],"handover":[{"match":"handover.pdf","page":1}]}

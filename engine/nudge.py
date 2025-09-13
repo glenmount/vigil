@@ -48,7 +48,7 @@ def nudge_from_labels(labels: dict) -> list:
     intr_high_enough = intr >= TH["interruptions_per_hr"]["med"]
     if brk_lvl in ("HIGH","MED") or intr_high_enough:
         r=[]
-        payload = {"hours_14d":labels.get("hours_14d",{}), "interruptions_per_hr": intr}
+        payload = {"hours_14d":labels.get("hours_14d",{}), "interruptions_per_hr":intr}
         e=write_event("nudge", {"unit":"ALL"}, payload, {"hours_14d":TH["hours_14d"], "interruptions_per_hr":TH["interruptions_per_hr"]}, None, cite("breaks")); r.append(e["sha256"])
         items.append(apply_playbook("Break Guarantees", "Schedule protected 15-min breaks", "unit_manager", now_iso(), r))
 
@@ -58,5 +58,12 @@ def nudge_from_labels(labels: dict) -> list:
         r=[]
         e=write_event("nudge", {"unit":"ALL"}, {"bells_p95":bell95}, TH["bells_p95"], None, cite("bells")); r.append(e["sha256"])
         items.append(apply_playbook("Hydration & Offload", "MED: long bells → offload docs + hydration rounds", "assistant", now_iso(), r))
+
+    # Sterile Cockpit (Handover) — if any window breached
+    breaches_total = int(labels.get("handover_breaches_total", 0))
+    if breaches_total >= 1:
+        r=[]
+        e=write_event("nudge", {"unit":"ALL"}, {"handover_breaches_total":breaches_total}, {}, None, cite("handover")); r.append(e["sha256"])
+        items.append(apply_playbook("Sterile Cockpit (Handover)", "Sterile Cockpit: protect 20-min handover window (no interruptions)", "unit_manager", now_iso(), r))
 
     return items
