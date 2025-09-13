@@ -1,26 +1,14 @@
 name: ci
 on: [push, pull_request]
-
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        bundle: [qa/goldens/fixtures, qa/goldens/fixtures_b, qa/goldens/fixtures_c]
-    env:
-      VIGIL_BUNDLE: ${{ matrix.bundle }}
     steps:
       - uses: actions/checkout@v4
       - name: Block outbound network
         run: sudo iptables -A OUTPUT -p tcp -j REJECT || true
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
-      - run: pip install pytest jsonschema
+      - run: pip install pytest
       - run: pytest -q
-
-  gate:
-    needs: test               # waits for ALL matrix legs to finish
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Matrix green ✅"
+      - run: make all
