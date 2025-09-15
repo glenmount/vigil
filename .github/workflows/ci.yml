@@ -1,8 +1,11 @@
 name: ci
 on: [push, pull_request]
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
     steps:
       - uses: actions/checkout@v4
 
@@ -11,13 +14,12 @@ jobs:
           uname -a
           python3 --version
           which python3
-          echo "PATH=$PATH"
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install toolchain
+      - name: Install toolchain (venv + pytest + make)
         shell: bash
         run: |
           set -euxo pipefail
@@ -29,27 +31,30 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Smoke imports
-        env: { PYTHONPATH: . }
+        shell: bash
         run: |
           set -euxo pipefail
+          source .venv/bin/activate
           python - <<'PY'
-          import importlib; 
+          import importlib
           for m in ["cli.label","cli.nudge","engine.nudge","qa.canon"]:
               importlib.import_module(m)
           print("imports OK")
           PY
 
       - name: Build (fixtures)
-        env: { PYTHONPATH: . }
+        shell: bash
         run: |
           set -euxo pipefail
+          source .venv/bin/activate
           make all
 
       - name: Tests
-        env: { PYTHONPATH: . }
+        shell: bash
         run: |
           set -euxo pipefail
-          pytest -q
+          source .venv/bin/activate
+          python -m pytest -q
 
   gate:
     runs-on: ubuntu-latest
