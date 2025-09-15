@@ -1,36 +1,54 @@
 name: ci
-
-on:
-  push:
-  pull_request:
-
+on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Environment info
+        run: |
+          uname -a
+          python3 --version
+          which python3
+          echo "PATH=$PATH"
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install deps (optional) + pytest
+      - name: Install toolchain
+        shell: bash
         run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y make
           python -m venv .venv
           source .venv/bin/activate
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install -U pip setuptools wheel pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Smoke imports
+        env: { PYTHONPATH: . }
+        run: |
+          set -euxo pipefail
+          python - <<'PY'
+          import importlib; 
+          for m in ["cli.label","cli.nudge","engine.nudge","qa.canon"]:
+              importlib.import_module(m)
+          print("imports OK")
+          PY
 
       - name: Build (fixtures)
-        env:
-          PYTHONPATH: .
+        env: { PYTHONPATH: . }
         run: |
+          set -euxo pipefail
           make all
 
       - name: Tests
-        env:
-          PYTHONPATH: .
+        env: { PYTHONPATH: . }
         run: |
+          set -euxo pipefail
           pytest -q
 
   gate:
