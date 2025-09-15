@@ -9,51 +9,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Environment info
-        run: |
-          uname -a
-          python3 --version
-          which python3
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install toolchain (venv + pytest + make)
+      - name: Install deps
         shell: bash
         run: |
           set -euxo pipefail
-          sudo apt-get update
-          sudo apt-get install -y make
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install -U pip setuptools wheel pytest
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      - name: Smoke imports
-        shell: bash
-        run: |
-          set -euxo pipefail
-          source .venv/bin/activate
-          python - <<'PY'
-          import importlib
-          for m in ["cli.label","cli.nudge","engine.nudge","qa.canon"]:
-              importlib.import_module(m)
-          print("imports OK")
-          PY
+          python -m pip install -U pip setuptools wheel
+          python -m pip install pytest
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
 
       - name: Build (fixtures)
         shell: bash
         run: |
           set -euxo pipefail
-          source .venv/bin/activate
           make all
 
       - name: Tests
         shell: bash
         run: |
           set -euxo pipefail
-          source .venv/bin/activate
           python -m pytest -q
 
   gate:
