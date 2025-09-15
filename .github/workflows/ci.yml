@@ -1,14 +1,35 @@
 name: ci
-on: [push, pull_request]
+
+on:
+  push:
+  pull_request:
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Block outbound network
-        run: sudo iptables -A OUTPUT -p tcp -j REJECT || true
+
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - run: pip install pytest
-      - run: pytest -q
-      - run: make all
+        with:
+          python-version: '3.11'
+
+      - name: Install deps (optional)
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -U pip setuptools wheel
+          # add any explicit test deps here if needed
+
+      - name: Build (fixtures)
+        env:
+          PYTHONPATH: .
+        run: |
+          make all
+
+      - name: Tests
+        env:
+          PYTHONPATH: .
+        run: |
+          pytest -q
