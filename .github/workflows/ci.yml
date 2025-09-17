@@ -1,14 +1,42 @@
 name: ci
 on: [push, pull_request]
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
     steps:
       - uses: actions/checkout@v4
-      - name: Block outbound network
-        run: sudo iptables -A OUTPUT -p tcp -j REJECT || true
+
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - run: pip install pytest
-      - run: pytest -q
-      - run: make all
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y make
+          python -m pip install -U pip setuptools wheel
+          python -m pip install pytest 'jsonschema[format-nongpl]==4.23.*' jsonschema
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+
+      - name: Build (fixtures)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          make all
+
+      - name: Tests
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python -m pytest -q
+
+  gate:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - run: echo "Gate passed"

@@ -1,0 +1,84 @@
+<!doctype html><meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Vigil — Queue, Receipts & Scoreboard</title>
+<style>
+ body{font:15px system-ui, sans-serif;margin:24px;line-height:1.35}
+ .row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+ .card{border:1px solid #ddd;border-radius:10px;padding:14px}
+ .item{cursor:pointer;padding:8px;border-bottom:1px dashed #eee}
+ .item:hover{background:#fafafa}
+ .pill{display:inline-block;font-size:12px;padding:2px 6px;border-radius:6px;background:#f2f2f2;margin-left:6px}
+ pre{background:#f7f7f7;padding:10px;border-radius:8px;overflow:auto;max-height:60vh}
+ select{font:14px system-ui;padding:4px 6px}
+ .score{display:flex;gap:14px;margin:10px 0 18px 0}
+ .score span{background:#f2f2f2;border-radius:8px;padding:6px 10px;font-size:13px}
+</style>
+<h1>Vigil</h1>
+<div class="score" id="score"><span>Loading metrics…</span></div>
+<p>Bundle: <select id="bundle"></select></p>
+<div class="row">
+  <div class="card"><h3>Live Queue</h3><div id="queue">Loading…</div></div>
+  <div class="card"><h3>Receipts</h3><div id="details"><em>Select a queue item</em></div></div>
+</div>
+<script>
+async function loadText(p){const r=await fetch(p,{cache:'no-store'}); if(!r.ok) throw new Error(p+': '+r.status); return r.text();}
+async function loadJSON(p){const t=await loadText(p); try{return JSON.parse(t)}catch(_){return t.trim().split(/\n+/).filter(Boolean).map(x=>JSON.parse(x));}}
+
+async function renderScore(){
+  try{
+    const s = await loadJSON('scoreboard.json');
+    const n = Number(s.items||0);
+    const gap = n < 2 ? 'n/a' : (s.fairness_gap_pp + '%');
+    document.getElementById('score').innerHTML =
+      `<span>Items: ${n}</span>
+       <span>Nudges: ${s.nudges}</span>
+       <span>Fairness gap: ${gap}</span>
+       <span>Citations/nudge: ${s.citations_avg_per_nudge}</span>
+       <span>Receipts: ${s.receipts_lines}</span>`;
+  }catch(e){ document.getElementById('score').innerHTML = '<span>No scoreboard</span>'; }
+}
+
+async function render(){
+  await renderScore();
+
+  // bundles list (optional)
+  let bundles=['current'];
+  try{
+    const meta=await loadJSON('bundles.json');
+    bundles=['current',...(meta.results||[]).map(r=>r.bundle)];
+  }catch(e){}
+
+  const sel=document.getElementById('bundle');
+  sel.innerHTML=bundles.map(b=>`<option value="${b}">${b}</option>`).join('');
+  sel.value='current';
+
+  async function loadQueue(bundle){
+    if(bundle==='current') return await loadJSON('queue.json');
+    return await loadJSON(`bundles/${bundle}/queue.json`);
+  }
+
+  async function draw(){
+    const queue = await loadQueue(sel.value);
+    const receipts = await loadJSON('receipts.jsonl').catch(()=>[]);
+    const byHash = new Map((receipts||[]).map(r=>[r.sha256,r]));
+    const q = document.getElementById('queue'); q.innerHTML='';
+    (queue.items||[]).forEach(it=>{
+      const d=document.createElement('div'); d.className='item';
+      d.innerHTML = `<strong>${it.title}</strong><span class="pill">${it.owner}</span>
+                     <div style="font-size:12px;opacity:.7">due ${it.due_by}</div>`;
+      d.onclick = ()=>{
+        const list=(it.receipts||[]).map(h=>byHash.get(h)).filter(Boolean);
+        document.getElementById('details').innerHTML = list.length
+          ? `<pre>${list.map(x=>JSON.stringify(x,null,2)).join('\n\n')}</pre>`
+          : `<em>No receipts found for this item.</em>`;
+      };
+      q.appendChild(d);
+    });
+  }
+  sel.onchange=draw; draw();
+}
+render();
+</script>
+<!-- v1.1 fairness-n/a -->
