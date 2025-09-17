@@ -1,20 +1,101 @@
-.PHONY: index label nudge report digest all clean bundles
-
+# ---------- Config ----------
+# Default bundle (can override: VIGIL_BUNDLE=qa/sandbox/hover_handover make all)
+VIGIL_BUNDLE ?= qa/goldens/fixtures
 PY := PYTHONPATH=.
 
-index: ; $(PY) python -m engine.policy_index
-label: ; $(PY) python -m cli.label
-nudge: ; $(PY) python -m cli.nudge
-report: ; $(PY) python -m cli.report
-digest: ; $(PY) python -m cli.digest
+# ---------- Core build (label → nudge → report → digest → scoreboard) ----------
+policy-index:
+	@$(PY) python -m engine.policy_index
+
+label:
+	@VIGIL_BUNDLE=$(VIGIL_BUNDLE) $(PY) python -m cli.label
+
+nudge:
+	@VIGIL_BUNDLE=$(VIGIL_BUNDLE) $(PY) python -m cli.nudge
+
+report:
+	@VIGIL_BUNDLE=$(VIGIL_BUNDLE) $(PY) python -m cli.report
+
+digest:
+	@VIGIL_BUNDLE=$(VIGIL_BUNDLE) $(PY) python -m cli.digest
 
 scoreboard:
-	@PYTHONPATH=. python -m cli.scoreboard
+	@VIGIL_BUNDLE=$(VIGIL_BUNDLE) $(PY) python -m cli.scoreboard
 
-all: index label nudge report digest scoreboard
+all: policy-index label nudge report digest scoreboard
+	@echo "[all] built with VIGIL_BUNDLE=$(VIGIL_BUNDLE)"
 
-bundles:
-	@$(PY) python qa/run_all.py
+# ---------- Preflight & Postprocess ----------
+preflight:
+	@echo "[preflight] bundle=$(VIGIL_BUNDLE)"
+	@python scripts/preflight.py --bundle $(VIGIL_BUNDLE) --json web/preflight_summary.json
 
-clean:
-	@rm -f receipts/events.jsonl web/queue.json web/report.json ledger/digest-*.json policies/index.json
+report-explain:
+	@python scripts/postprocess_report.py
+
+# ---------- Deterministic publishers (viewer helpers; local only) ----------
+emit-opportunities:
+	@python scripts/emit_opportunities.py
+
+# Prefer CSV-derived actions (handover windows) if present; fall back to labels-based script
+# Copy local artifacts for drill-down (never published on Pages)
+pilot-copy:
+	@mkdir -p web/receipts
+	@cp -f receipts/labels.json web/receipts/labels.json 2>/dev/null || true
+	@[ -f receipts/events.jsonl ] && cp -f receipts/events.jsonl web/receipts.jsonl || true
+
+# ---------- One-shot local pilot run ----------
+pilot-day: preflight all report-explain emit-opportunities pilot-copy
+	@echo "[pilot-day] Done. Serve locally with: python -m http.server -d web 8082"
+
+.PHONY: policy-index label nudge report digest scoreboard all preflight report-explain emit-opportunities emit-actions pilot-copy pilot-day
+
+sandbox-small:
+	@python scripts/gen_sandbox.py --name small2u --units 2 --days 1 --seed 7 --breaches "Unit A:1,Unit B:0"
+	@VIGIL_BUNDLE=qa/sandbox/small2u $(MAKE) pilot-day
+	@echo "[sandbox-small] serve: python -m http.server -d web 8082"
+
+sandbox-week:
+	@python scripts/gen_sandbox.py --name week3u --units 3 --days 7 --seed 13 --breaches "Unit A:3,Unit C:1"
+	@VIGIL_BUNDLE=qa/sandbox/week3u $(MAKE) pilot-day
+	@echo "[sandbox-week] serve: python -m http.server -d web 8082"
+
+sandbox-no-units:
+	@VIGIL_BUNDLE=qa/sandbox/no_units $(MAKE) pilot-day
+	@echo "[sandbox-no-units] serve: python -m http.server -d web 8082"
+
+monday-report:
+	@python scripts/monday_report.py
+
+sandbox-random-week:
+	@python scripts/gen_sandbox.py --name randw --units 4 --days 7 --seed 99 --breaches "Unit A:4,Unit B:2,Unit C:1"
+	@VIGIL_BUNDLE=qa/sandbox/randw $(MAKE) pilot-day
+	@$(MAKE) monday-report
+	@echo "[sandbox-random-week] serve: python -m http.server -d web 8082"
+
+ci-check:
+	@echo "[ci-check] preflight (fixtures)"
+	@VIGIL_BUNDLE=qa/goldens/fixtures $(MAKE) preflight || true
+	@echo "[ci-check] build (fixtures)"
+	@VIGIL_BUNDLE=qa/goldens/fixtures $(MAKE) all
+	@echo "[ci-check] pytest"
+	@PYTHONPATH=. pytest -q
+
+standards:
+	@python scripts/check_standards.py
+
+delta:
+	@[ -f web/standards.json ] && cp -f web/standards.json web/standards.prev.json || true
+	@python scripts/check_standards.py
+	@python scripts/delta_intel.py
+
+publish-gh-pages:
+	@echo "[publish] build receipt-free site to gh-pages"
+	@rm -f web/receipts.jsonl && rm -rf web/receipts 2>/dev/null || true
+	@git fetch origin
+	@{ git show-ref --verify --quiet refs/heads/gh-pages || git branch gh-pages origin/gh-pages 2>/dev/null || true; }
+	@git worktree remove gh-pages 2>/dev/null || true
+	@git worktree add gh-pages gh-pages
+	@rsync -av --delete web/ gh-pages/
+	@cd gh-pages && git add -A && git commit -m "publish: update static site" && git push origin gh-pages && cd ..
+	@git worktree remove gh-pages

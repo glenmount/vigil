@@ -1,0 +1,20 @@
+{
+  "$schema": "https://example.com/vigil/rules.schema.json",
+  "version": 1,
+  "rules": [
+    {
+      "id": "handover.window.minutes",
+      "title": "Handover window = 20 minutes",
+      "kind": "handover",
+      "op": "eq",
+      "value": 20
+    },
+    {
+      "id": "nudges.top_n.max",
+      "title": "Top-N nudges capped at 3",
+      "kind": "queue",
+      "op": "lte",
+      "value": 3
+    }
+  ]
+}
