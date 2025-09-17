@@ -15,6 +15,27 @@
       "kind": "queue",
       "op": "lte",
       "value": 3
+    },
+    {
+      "id": "bells.p95.lte",
+      "title": "Call-bells p95 \u2264 480s",
+      "kind": "bells",
+      "op": "lte",
+      "value": 480
+    },
+    {
+      "id": "handover.tolerance.pp.lte",
+      "title": "Handover breach tolerance \u2264 20 pp",
+      "kind": "handover",
+      "op": "lte",
+      "value": 20
+    },
+    {
+      "id": "breaks.presence.when.longhours",
+      "title": "If long hours, include a Breaks item",
+      "kind": "breaks",
+      "op": "present",
+      "value": 1
     }
   ]
 }

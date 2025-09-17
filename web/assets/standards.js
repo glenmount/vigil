@@ -7,7 +7,6 @@
     const s = await r.json();
     const {passed, failed, unknown} = s.summary || {};
     host.innerHTML = `
-      <h2 style="margin:16px 0 8px 0">Executable Standards (v1)</h2>
       <div style="font-size:14px;color:#333;margin-bottom:8px">
         Passed: ${passed} • Failed: ${failed} • Unknown: ${unknown}
       </div>

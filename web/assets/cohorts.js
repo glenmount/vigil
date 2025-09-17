@@ -36,7 +36,6 @@
   function render(rows,gapText){
     const host=document.getElementById("cohort-table"); if(!host) return;
     host.innerHTML = `
-      <h2 style="margin:16px 0 8px 0">Cohorts (Fairness)</h2>
       <div id="cohort-legend" style="margin:6px 0 8px 0;color:#666;font-size:12px">
         Actions = per-unit handover items; <b>ALL</b> = global items when units are unknown.
       </div>

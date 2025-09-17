@@ -99,3 +99,9 @@ publish-gh-pages:
 	@rsync -av --delete web/ gh-pages/
 	@cd gh-pages && git add -A && git commit -m "publish: update static site" && git push origin gh-pages && cd ..
 	@git worktree remove gh-pages
+
+opps-from-labels:
+	@python scripts/emit_windows_from_labels.py
+
+pilot-day: preflight all report-explain opps-from-labels pilot-copy
+	@echo "[pilot-day] Done."

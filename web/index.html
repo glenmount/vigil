@@ -1,338 +1,40 @@
-<!doctype html><meta charset="utf-8" />
-<!doctype html><meta charset="utf-8" />
-<!doctype html><meta charset="utf-8" />
-<!doctype html><meta charset="utf-8" />
-<title>Vigil — Queue, Receipts & Scoreboard</title>
-<title>Vigil — Queue, Receipts & Scoreboard</title>
-<title>Vigil — Queue, Receipts & Scoreboard</title>
-<title>Vigil — Queue, Receipts & Scoreboard</title>
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vigil</title>
 <style>
-<style>
-<style>
-<style>
- body{font:15px system-ui, sans-serif;margin:24px;line-height:1.35}
- body{font:15px system-ui, sans-serif;margin:24px;line-height:1.35}
- body{font:15px system-ui, sans-serif;margin:24px;line-height:1.35}
- body{font:15px system-ui, sans-serif;margin:24px;line-height:1.35}
- .row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
- .row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
- .row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
- .row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
- .card{border:1px solid #ddd;border-radius:10px;padding:14px}
- .card{border:1px solid #ddd;border-radius:10px;padding:14px}
- .card{border:1px solid #ddd;border-radius:10px;padding:14px}
- .card{border:1px solid #ddd;border-radius:10px;padding:14px}
- .item{cursor:pointer;padding:8px;border-bottom:1px dashed #eee}
- .item{cursor:pointer;padding:8px;border-bottom:1px dashed #eee}
- .item{cursor:pointer;padding:8px;border-bottom:1px dashed #eee}
- .item{cursor:pointer;padding:8px;border-bottom:1px dashed #eee}
- .item:hover{background:#fafafa}
- .item:hover{background:#fafafa}
- .item:hover{background:#fafafa}
- .item:hover{background:#fafafa}
- .pill{display:inline-block;font-size:12px;padding:2px 6px;border-radius:6px;background:#f2f2f2;margin-left:6px}
- .pill{display:inline-block;font-size:12px;padding:2px 6px;border-radius:6px;background:#f2f2f2;margin-left:6px}
- .pill{display:inline-block;font-size:12px;padding:2px 6px;border-radius:6px;background:#f2f2f2;margin-left:6px}
- .pill{display:inline-block;font-size:12px;padding:2px 6px;border-radius:6px;background:#f2f2f2;margin-left:6px}
- pre{background:#f7f7f7;padding:10px;border-radius:8px;overflow:auto;max-height:60vh}
- pre{background:#f7f7f7;padding:10px;border-radius:8px;overflow:auto;max-height:60vh}
- pre{background:#f7f7f7;padding:10px;border-radius:8px;overflow:auto;max-height:60vh}
- pre{background:#f7f7f7;padding:10px;border-radius:8px;overflow:auto;max-height:60vh}
- .score{display:flex;gap:14px;margin:10px 0 18px 0}
- .score{display:flex;gap:14px;margin:10px 0 18px 0}
- .score{display:flex;gap:14px;margin:10px 0 18px 0}
- .score{display:flex;gap:14px;margin:10px 0 18px 0}
- .score span{background:#f2f2f2;border-radius:8px;padding:6px 10px;font-size:13px}
- .score span{background:#f2f2f2;border-radius:8px;padding:6px 10px;font-size:13px}
- .score span{background:#f2f2f2;border-radius:8px;padding:6px 10px;font-size:13px}
- .score span{background:#f2f2f2;border-radius:8px;padding:6px 10px;font-size:13px}
- select{font:14px system-ui;padding:4px 6px}
- select{font:14px system-ui;padding:4px 6px}
- select{font:14px system-ui;padding:4px 6px}
- select{font:14px system-ui;padding:4px 6px}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial,sans-serif;margin:20px;color:#111}
+  h1{font-size:34px;margin:0 0 12px} h2{font-size:22px;margin:16px 0 8px} h3{font-size:18px;margin:8px 0}
+  .row{display:flex;gap:16px;flex-wrap:wrap}.pane{flex:1;min-width:300px;border:1px solid #eee;border-radius:10px;padding:14px}
+  .muted{color:#666;font-size:14px}.bundle{margin:10px 0}
 </style>
-</style>
-</style>
-</style>
-<h1>Vigil</h1>
-<h1>Vigil</h1>
-<h1>Vigil</h1>
-<h1>Vigil</h1>
-<div class="score" id="score"><span>Loading metrics…</span></div>
-<p>
-<p>
-<p>
-<p>
-  Bundle:
-  <select id="bundle"></select>
-  <select id="bundle"></select>
-  <select id="bundle"></select>
-  <select id="bundle"></select>
-</p>
-</p>
-</p>
-</p>
-<div class="row">
-<div class="row">
-<div class="row">
-<div class="row">
-  <div class="card"><h3>Live Queue</h3><div id="queue">Loading…</div></div>
-  <div class="card"><h3>Live Queue</h3><div id="queue">Loading…</div></div>
-  <div class="card"><h3>Live Queue</h3><div id="queue">Loading…</div></div>
-  <div class="card"><h3>Live Queue</h3><div id="queue">Loading…</div></div>
-  <div class="card"><h3>Receipts</h3><div id="details"><em>Select a queue item</em></div></div>
-  <div class="card"><h3>Receipts</h3><div id="details"><em>Select a queue item</em></div></div>
-  <div class="card"><h3>Receipts</h3><div id="details"><em>Select a queue item</em></div></div>
-  <div class="card"><h3>Receipts</h3><div id="details"><em>Select a queue item</em></div></div>
-</div>
-</div>
-</div>
-</div>
-<script>
-<script>
-<script>
-<script>
-async function loadText(p){const r=await fetch(p); if(!r.ok) throw new Error(p+': '+r.status); return r.text();}
-async function loadText(p){const r=await fetch(p); if(!r.ok) throw new Error(p+': '+r.status); return r.text();}
-async function loadText(p){const r=await fetch(p); if(!r.ok) throw new Error(p+': '+r.status); return r.text();}
-async function loadText(p){const r=await fetch(p); if(!r.ok) throw new Error(p+': '+r.status); return r.text();}
-async function loadJSON(p){const t=await loadText(p); try{return JSON.parse(t)}catch(_){return t.trim().split(/\n+/).filter(Boolean).map(x=>JSON.parse(x));}}
-async function loadJSON(p){const t=await loadText(p); try{return JSON.parse(t)}catch(_){return t.trim().split(/\n+/).filter(Boolean).map(x=>JSON.parse(x));}}
-async function loadJSON(p){const t=await loadText(p); try{return JSON.parse(t)}catch(_){return t.trim().split(/\n+/).filter(Boolean).map(x=>JSON.parse(x));}}
-async function loadJSON(p){const t=await loadText(p); try{return JSON.parse(t)}catch(_){return t.trim().split(/\n+/).filter(Boolean).map(x=>JSON.parse(x));}}
-async function renderScore(){
-async function renderScore(){
-async function renderScore(){
-async function renderScore(){
-  try{
-  try{
-  try{
-  try{
-    const s=await loadJSON('scoreboard.json');
-    const s=await loadJSON('scoreboard.json');
-    const s=await loadJSON('scoreboard.json');
-    const s=await loadJSON('scoreboard.json');
-    document.getElementById('score').innerHTML =
-    document.getElementById('score').innerHTML =
-    document.getElementById('score').innerHTML =
-    document.getElementById('score').innerHTML =
-      `<span>Items: ${s.items}</span>
-      `<span>Items: ${s.items}</span>
-      `<span>Items: ${s.items}</span>
-      `<span>Items: ${s.items}</span>
-       <span>Nudges: ${s.nudges}</span>
-       <span>Nudges: ${s.nudges}</span>
-       <span>Nudges: ${s.nudges}</span>
-       <span>Nudges: ${s.nudges}</span>
-       <span>Fairness gap: ${s.fairness_gap_pp}%</span>
-       <span>Fairness gap: ${s.fairness_gap_pp}%</span>
-       <span>Fairness gap: ${s.fairness_gap_pp}%</span>
-       <span>Fairness gap: ${s.fairness_gap_pp}%</span>
-       <span>Citations/nudge: ${s.citations_avg_per_nudge}</span>
-       <span>Citations/nudge: ${s.citations_avg_per_nudge}</span>
-       <span>Citations/nudge: ${s.citations_avg_per_nudge}</span>
-       <span>Citations/nudge: ${s.citations_avg_per_nudge}</span>
-       <span>Receipts: ${s.receipts_lines}</span>`;
-       <span>Receipts: ${s.receipts_lines}</span>`;
-       <span>Receipts: ${s.receipts_lines}</span>`;
-       <span>Receipts: ${s.receipts_lines}</span>`;
-  }catch(e){ document.getElementById('score').innerHTML = '<span>No scoreboard yet</span>'; }
-  }catch(e){ document.getElementById('score').innerHTML = '<span>No scoreboard yet</span>'; }
-  }catch(e){ document.getElementById('score').innerHTML = '<span>No scoreboard yet</span>'; }
-  }catch(e){ document.getElementById('score').innerHTML = '<span>No scoreboard yet</span>'; }
-}
-}
-}
-}
-async function loadQueue(bundle){
-async function loadQueue(bundle){
-async function loadQueue(bundle){
-async function loadQueue(bundle){
-  if(bundle==='current'){ return await loadJSON('queue.json'); }
-  if(bundle==='current'){ return await loadJSON('queue.json'); }
-  if(bundle==='current'){ return await loadJSON('queue.json'); }
-  if(bundle==='current'){ return await loadJSON('queue.json'); }
-  return await loadJSON(`bundles/${bundle}/queue.json`);
-  return await loadJSON(`bundles/${bundle}/queue.json`);
-  return await loadJSON(`bundles/${bundle}/queue.json`);
-  return await loadJSON(`bundles/${bundle}/queue.json`);
-(async ()=>{
-(async ()=>{
-(async ()=>{
-(async ()=>{
-  await renderScore();
-  await renderScore();
-  await renderScore();
-  await renderScore();
-  // bundles list (optional)
-  // bundles list (optional)
-  // bundles list (optional)
-  // bundles list (optional)
-  let bundles = ['current'];
-  let bundles = ['current'];
-  let bundles = ['current'];
-  let bundles = ['current'];
-  try {
-  try {
-  try {
-  try {
-    const meta = await loadJSON('bundles.json');
-    const meta = await loadJSON('bundles.json');
-    const meta = await loadJSON('bundles.json');
-    const meta = await loadJSON('bundles.json');
-    bundles = ['current', ...(meta.results||[]).map(r=>r.bundle)];
-    bundles = ['current', ...(meta.results||[]).map(r=>r.bundle)];
-    bundles = ['current', ...(meta.results||[]).map(r=>r.bundle)];
-    bundles = ['current', ...(meta.results||[]).map(r=>r.bundle)];
-  } catch(e) {}
-  } catch(e) {}
-  } catch(e) {}
-  } catch(e) {}
-  const sel = document.getElementById('bundle');
-  const sel = document.getElementById('bundle');
-  const sel = document.getElementById('bundle');
-  const sel = document.getElementById('bundle');
-  sel.innerHTML = bundles.map(b=>`<option value="${b}">${b}</option>`).join('');
-  sel.innerHTML = bundles.map(b=>`<option value="${b}">${b}</option>`).join('');
-  sel.innerHTML = bundles.map(b=>`<option value="${b}">${b}</option>`).join('');
-  sel.innerHTML = bundles.map(b=>`<option value="${b}">${b}</option>`).join('');
-  sel.value = 'current';
-  sel.value = 'current';
-  sel.value = 'current';
-  sel.value = 'current';
+</head><body>
+  <h1>Vigil</h1>
 
+  <div class="muted">Loading metrics...</div>
 
+  <div class="bundle"><strong>Bundle:</strong> <select id="bundle"></select></div>
 
+  <div class="row">
+    <div class="pane"><h3>Live Queue</h3><div id="live-queue" class="muted">Loading...</div></div>
+    <div class="pane"><h3>Receipts</h3><div id="receipts-pane" class="muted"><em>Select a queue item</em></div></div>
+  </div>
 
-  async function render() {
-  async function render() {
-  async function render() {
-  async function render() {
-    const queue = await loadQueue(sel.value);
-    const queue = await loadQueue(sel.value);
-    const queue = await loadQueue(sel.value);
-    const queue = await loadQueue(sel.value);
-    const receipts = await loadJSON('receipts.jsonl').catch(()=>[]);
-    const receipts = await loadJSON('receipts.jsonl').catch(()=>[]);
-    const receipts = await loadJSON('receipts.jsonl').catch(()=>[]);
-    const receipts = await loadJSON('receipts.jsonl').catch(()=>[]);
-    const byHash = new Map((receipts||[]).map(r=>[r.sha256,r]));
-    const byHash = new Map((receipts||[]).map(r=>[r.sha256,r]));
-    const byHash = new Map((receipts||[]).map(r=>[r.sha256,r]));
-    const byHash = new Map((receipts||[]).map(r=>[r.sha256,r]));
-    const $q = document.getElementById('queue'); $q.innerHTML = '';
-    const $q = document.getElementById('queue'); $q.innerHTML = '';
-    const $q = document.getElementById('queue'); $q.innerHTML = '';
-    const $q = document.getElementById('queue'); $q.innerHTML = '';
-    (queue.items||[]).forEach((it)=>{
-    (queue.items||[]).forEach((it)=>{
-    (queue.items||[]).forEach((it)=>{
-    (queue.items||[]).forEach((it)=>{
-      const d=document.createElement('div'); d.className='item';
-      const d=document.createElement('div'); d.className='item';
-      const d=document.createElement('div'); d.className='item';
-      const d=document.createElement('div'); d.className='item';
-      d.innerHTML = `<strong>${it.title}</strong><span class="pill">${it.owner}</span>
-      d.innerHTML = `<strong>${it.title}</strong><span class="pill">${it.owner}</span>
-      d.innerHTML = `<strong>${it.title}</strong><span class="pill">${it.owner}</span>
-      d.innerHTML = `<strong>${it.title}</strong><span class="pill">${it.owner}</span>
-        <div style="font-size:12px;opacity:.7">due ${it.due_by}</div>`;
-        <div style="font-size:12px;opacity:.7">due ${it.due_by}</div>`;
-        <div style="font-size:12px;opacity:.7">due ${it.due_by}</div>`;
-        <div style="font-size:12px;opacity:.7">due ${it.due_by}</div>`;
-      d.onclick = ()=>{
-      d.onclick = ()=>{
-      d.onclick = ()=>{
-      d.onclick = ()=>{
-        const list = (it.receipts||[]).map(h=>byHash.get(h)).filter(Boolean);
-        const list = (it.receipts||[]).map(h=>byHash.get(h)).filter(Boolean);
-        const list = (it.receipts||[]).map(h=>byHash.get(h)).filter(Boolean);
-        const list = (it.receipts||[]).map(h=>byHash.get(h)).filter(Boolean);
-        document.getElementById('details').innerHTML = list.length
-        document.getElementById('details').innerHTML = list.length
-        document.getElementById('details').innerHTML = list.length
-        document.getElementById('details').innerHTML = list.length
-          ? `<pre>${list.map(x=>JSON.stringify(x,null,2)).join('\n\n')}</pre>`
-          ? `<pre>${list.map(x=>JSON.stringify(x,null,2)).join('\n\n')}</pre>`
-          ? `<pre>${list.map(x=>JSON.stringify(x,null,2)).join('\n\n')}</pre>`
-          ? `<pre>${list.map(x=>JSON.stringify(x,null,2)).join('\n\n')}</pre>`
-          : `<em>No receipts found for this item.</em>`;
-          : `<em>No receipts found for this item.</em>`;
-          : `<em>No receipts found for this item.</em>`;
-          : `<em>No receipts found for this item.</em>`;
-      };
-      };
-      };
-      };
-      $q.appendChild(d);
-      $q.appendChild(d);
-      $q.appendChild(d);
-      $q.appendChild(d);
-    });
-    });
-    });
-    });
-  }
-  }
-  }
-  }
-  sel.onchange = render;
-  sel.onchange = render;
-  sel.onchange = render;
-  sel.onchange = render;
-  render();
-  render();
-  render();
-  render();
-})();
-})();
-})();
-})();
-</script>
-</script>
-</script>
-</script>
+  <h2>Cohorts (Fairness)</h2>
+  <div id="cohort-table" style="margin-top:8px"></div>
 
+  <div id="monday" style="margin-top:24px"></div>
 
+  <h2 style="margin-top:24px">Executable Standards (v1)</h2>
+  <div id="standards" style="margin-top:8px"></div>
 
+  <div id="delta" style="margin-top:24px"></div>
 
-<!-- Cohort fairness table (receipt-free) -->
-<!-- Cohort fairness table (receipt-free) -->
-<!-- Cohort fairness table (receipt-free) -->
-<!-- Cohort fairness table (receipt-free) -->
-<div id="cohort-table" style="margin-top:16px"></div>
-<div id="cohort-table" style="margin-top:16px"></div>
-<div id="cohort-table" style="margin-top:16px"></div>
-<div id="cohort-table" style="margin-top:16px"></div>
-<link rel="stylesheet" href="assets/cohorts.css"/>
-<script src="assets/cohorts.js"></script>
-
-
-
-
-<!-- Queue badges (Breaks/Handover/Bells) -->
-<!-- Queue badges (Breaks/Handover/Bells) -->
-<!-- Queue badges (Breaks/Handover/Bells) -->
-<!-- Queue badges (Breaks/Handover/Bells) -->
-<script src="assets/badges.js"></script>
-
-
-
-
-<!-- Monday summary (receipt-free) -->
-<!-- Monday summary (receipt-free) -->
-<!-- Monday summary (receipt-free) -->
-<!-- Monday summary (receipt-free) -->
-<div id="monday" style="margin-top:24px"></div>
-<div id="monday" style="margin-top:24px"></div>
-<div id="standards" style="margin-top:24px"></div>
-<div id="delta" style="margin-top:24px"></div>
-<script src="assets/delta.js"></script>
-<div id="standards" style="margin-top:24px"></div>
-<script src="assets/standards.js"></script>
-<script src="assets/standards.js"></script>
-<div id="monday" style="margin-top:24px"></div>
-<div id="monday" style="margin-top:24px"></div>
-<script src="assets/monday.js"></script>
-
-<script src="assets/bundle-guard.js"></script>
+  <!-- single-include assets -->
+  <link rel="stylesheet" href="assets/cohorts.css"/>
+  <script src="assets/cohorts.js"></script>
+  <script src="assets/badges.js"></script>
+  <script src="assets/monday.js"></script>
+  <script src="assets/standards.js"></script>
+  <script src="assets/delta.js"></script>
+  <script src="assets/bundle-guard.js"></script>
+</body></html>
