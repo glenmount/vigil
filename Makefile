@@ -105,3 +105,50 @@ opps-from-labels:
 
 pilot-day: preflight all report-explain opps-from-labels pilot-copy
 	@echo "[pilot-day] Done."
+
+sandbox-handover-fail:
+	@mkdir -p qa/sandbox/handover_fail
+	@cat > qa/sandbox/handover_fail/roster.csv <<\"CSV\"
+staff_id,unit,role,shift_start,shift_end
+A1,Unit A,carer,2025-09-14T07:00:00+00:00,2025-09-14T15:00:00+00:00
+B1,Unit B,carer,2025-09-14T07:30:00+00:00,2025-09-14T15:30:00+00:00
+C1,Unit C,carer,2025-09-14T08:00:00+00:00,2025-09-14T16:00:00+00:00
+CSV
+	@cat > qa/sandbox/handover_fail/timeclock.csv <<\"CSV\"
+staff_id,clock_in,clock_out
+A1,2025-09-14T06:55:00+00:00,2025-09-14T15:05:00+00:00
+B1,2025-09-14T07:25:00+00:00,2025-09-14T15:35:00+00:00
+C1,2025-09-14T07:55:00+00:00,2025-09-14T16:05:00+00:00
+CSV
+	@cat > qa/sandbox/handover_fail/bells.csv <<\"CSV\"
+resident_id,started_at,response_secs
+RC1,2025-09-14T08:02:00+00:00,90
+RC2,2025-09-14T08:10:00+00:00,120
+CSV
+	@echo "resident_id,kind,occurred_at" > qa/sandbox/handover_fail/incidents.csv
+	@VIGIL_BUNDLE=qa/sandbox/handover_fail $(MAKE) all standards delta
+	@echo "[handover-fail] serve: python -m http.server -d web 8082"
+
+# --- demo: force per-unit handover breaches in Unit C (should FAIL tolerance) ---
+sandbox-handover-fail:
+	@mkdir -p qa/sandbox/handover_fail
+	@cat > qa/sandbox/handover_fail/roster.csv <<'CSV'
+staff_id,unit,role,shift_start,shift_end
+A1,Unit A,carer,2025-09-14T07:00:00+00:00,2025-09-14T15:00:00+00:00
+B1,Unit B,carer,2025-09-14T07:30:00+00:00,2025-09-14T15:30:00+00:00
+C1,Unit C,carer,2025-09-14T08:00:00+00:00,2025-09-14T16:00:00+00:00
+CSV
+	@cat > qa/sandbox/handover_fail/timeclock.csv <<'CSV'
+staff_id,clock_in,clock_out
+A1,2025-09-14T06:55:00+00:00,2025-09-14T15:05:00+00:00
+B1,2025-09-14T07:25:00+00:00,2025-09-14T15:35:00+00:00
+C1,2025-09-14T07:55:00+00:00,2025-09-14T16:05:00+00:00
+CSV
+	@cat > qa/sandbox/handover_fail/bells.csv <<'CSV'
+resident_id,started_at,response_secs
+RC1,2025-09-14T08:02:00+00:00,90
+RC2,2025-09-14T08:10:00+00:00,120
+CSV
+	@echo "resident_id,kind,occurred_at" > qa/sandbox/handover_fail/incidents.csv
+	@VIGIL_BUNDLE=qa/sandbox/handover_fail $(MAKE) all standards delta
+	@echo "[handover-fail] serve: python -m http.server -d web 8082"
